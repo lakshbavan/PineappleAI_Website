@@ -116,7 +116,7 @@ function Home(){
           <div className="collapse navbar-collapse" id="navbarCollapse">
             <div className="navbar-nav ms-auto py-0">
               <a href="/" className="nav-item nav-link active">Home</a>
-              <a href="/" className="nav-item nav-link">About</a>
+              <a href="about" className="nav-item nav-link">About</a>
               <a href="/" className="nav-item nav-link">Services</a>
               <a href="/" className="nav-item nav-link">Projects</a>
               <div className="nav-item dropdown">
