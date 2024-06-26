@@ -2,43 +2,15 @@
 import React, { useState, useEffect } from "react";
 import OwlCarousel from 'react-owl-carousel';
 import 'animate.css';
+import axios from 'axios';
 // import OwlCarousel from 'react-owl-carousel';
 
 
 function Home(){
   const [loading, setLoading] = useState(true);
-  const [carouselData, setCarouselData] = useState(null);
-  const [error, setError] = useState(null);
+  const [carouselData, setCarouselData] = useState([]);
   
-  useEffect(() => {
-    fetch('/api/carousel')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setCarouselData(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!carouselData) {
-    return <div>No data available</div>;
-  }
   const headerOptions = {
     items: 1,
     loop: true,
@@ -81,16 +53,24 @@ function Home(){
     }
   };
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000); // simulate loading delay
-    return () => clearTimeout(timer);
+    const fetchCarouselData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/carousel');
+        setCarouselData(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching carousel data:', error);
+        setLoading(false); // Ensure loading state is set to false even on error
+      }
+    };
+
+    fetchCarouselData();
   }, []);
 
   if (loading) {
     return (
       <div id="spinner" className="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div className="spinner-border text-green" style={{width: '3rem', height: '3rem'}} role="status">
+        <div className="spinner-border text-green" style={{ width: '3rem', height: '3rem' }} role="status">
           <span className="sr-only">Loading...</span>
         </div>
       </div>
@@ -110,14 +90,20 @@ function Home(){
     {/* Spinner End */}
     {/* Topbar Start */}
     <div className="container-fluid topbar px-0 d-none d-lg-block">
-      <div className="container px-0">
-        <div className="row gx-0 align-items-center" style={{height: '45px'}}>
-          <div className="col-lg-8 text-center text-lg-start mb-lg-0">
-            <div className="d-flex flex-wrap">
-              <a href="/" className="text-white me-4"><i className="fas fa-map-marker-alt text-green me-2" />Find A Location</a>
-              <a href="/" className="text-white me-4"><i className="fas fa-phone-alt text-green me-2" />0777890234</a>
-              <a href="/" className="text-white me-0"><i className="fas fa-envelope text-green me-2" />Pineappleai@gmail.com</a>
-            </div>
+  <div className="container px-0">
+    <div className="row gx-0 align-items-center" style={{height: '45px'}}>
+      <div className="col-lg-8 text-center text-lg-start mb-lg-0">
+        <div className="d-flex flex-wrap">
+          <a href="/" className="text-white text-decoration-none me-4">
+            <i className="fas fa-map-marker-alt text-green me-2" />Find A Location
+          </a>
+          <a href="/" className="text-white text-decoration-none me-4">
+            <i className="fas fa-phone-alt text-green me-2" />0777890234
+          </a>
+          <a href="/" className="text-white text-decoration-none me-0">
+            <i className="fas fa-envelope text-green me-2" />Pineappleai@gmail.com
+          </a>
+        </div>
           </div>
           <div className="col-lg-4 text-center text-lg-end">
             <div className="d-flex align-items-center justify-content-end">
@@ -190,36 +176,27 @@ function Home(){
     </div>
     {/* Modal Search End */}
     {/* Header Carousel Start */}
-    <OwlCarousel className="header-carousel owl-carousel" {...headerOptions}>
-        <div className="header-carousel-item">
-          <div className="header-carousel-item-img-1">
-            <img src={carouselData.carousel_img_1} className="img-fluid w-100" alt="Carousel 1" />
-          </div>
-          <div className="carousel-caption">
-            <div className="carousel-caption-inner text-start p-3">
-              <h1 className="display-1 text-capitalize text-white mb-4 fadeInUp animate__animated" style={{ animationDelay: '1.3s' }}>
-                {carouselData.carousel_des_1}
-              </h1>
-              <p className="mb-5 fs-5 fadeInUp animate__animated" style={{ animationDelay: '1.5s' }}></p>
-              <a className="btn btn-primary rounded-pill py-3 px-5 mb-4 me-4 fadeInUp animate__animated" style={{ animationDelay: '1.7s' }} href="/">Apply Now</a>
-              <a className="btn btn-primary rounded-pill py-3 px-5 mb-4 fadeInUp animate__animated" style={{ animationDelay: '1.7s' }} href="/">Read More</a>
+  <OwlCarousel className="header-carousel owl-carousel" {...headerOptions}>
+        {carouselData.map((item, index) => (
+          <div key={index} className="header-carousel-item">
+            <div className="header-carousel-item-img">
+              <img src={`http://localhost:3001/images/${item.carousel_img_1}`} className="img-fluid w-100" alt={`Carousel Image ${index + 1}`} />
+            </div>
+            <div className="carousel-caption">
+              <div className="carousel-caption-inner text-start p-3">
+                <h1 className="display-4 text-center text-white mb-4 fadeInUp animate__animated" style={{ animationDelay: '1.3s' }}>{item.carousel_des_1}</h1>
+                {/* Customized buttons */}
+                <div className="mt-4 d-flex justify-content-center">
+  <a className="btn btn-primary rounded-pill py-3 px-5 mb-4 me-4 fadeInUp animate__animated" style={{ animationDelay: '1.7s' }} href="/">Apply Now</a>
+  <a className="btn btn-primary rounded-pill py-3 px-5 mb-4 me-4 fadeInUp animate__animated" style={{ animationDelay: '1.7s' }} href="/">Read More</a>
+</div>
+
+              </div>
             </div>
           </div>
-        </div>
-        <div className="header-carousel-item mx-auto">
-          <div className="header-carousel-item-img-2">
-            <img src={carouselData.carousel_img_2} className="img-fluid w-100" alt="Carousel 2" />
-          </div>
-          <div className="carousel-caption">
-            <div className="carousel-caption-inner text-center p-3">
-              <h1 className="display-1 text-capitalize text-white mb-4">{carouselData.carousel_des_2}</h1>
-              <p className="mb-5 fs-5">We are going to train the freshers for AI World!</p>
-              <a className="btn btn-primary rounded-pill py-3 px-5 mb-4 me-4" href="#">Apply Now</a>
-              <a className="btn btn-primary rounded-pill py-3 px-5 mb-4" href="#">Read More</a>
-            </div>
-          </div>
-        </div>
+        ))}
       </OwlCarousel>
+
       {/* Header Carousel End */}
 
     {/* About Start */}
@@ -249,6 +226,21 @@ function Home(){
                 <p className="text-dark mb-0"><i className="fas fa-check-circle text-green me-1" /> Continuous Improvement</p>
               </div>
             </div>
+            {/* <div class="row g-4 justify-content-between mb-5">
+                        <div class="col-xl-5"><a href="#" class="btn btn-dark rounded-pill py-3 px-5">Discover More</a></div>
+                        <div class="col-xl-7 mb-5">
+                            <div class="about-customer d-flex position-relative">
+                                <img src="img/customer-img-1.jpg" class="img-fluid btn-xl-square position-absolute" style="left: 0; top: 0;"  alt="Image">
+                                <img src="img/customer-img-2.jpg" class="img-fluid btn-xl-square position-absolute" style="left: 45px; top: 0;" alt="Image">
+                                <img src="img/customer-img-3.jpg" class="img-fluid btn-xl-square position-absolute" style="left: 90px; top: 0;" alt="Image">
+                                <img src="img/customer-img-1.jpg" class="img-fluid btn-xl-square position-absolute" style="left: 135px; top: 0;" alt="Image">
+                                <div class="position-absolute text-dark" style="left: 220px; top: 10px;">
+                                    <p class="mb-0">5m+ Trusted</p>
+                                    <p class="mb-0">Global Customers</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div> */}
             <div className="row g-4 text-center align-items-center justify-content-center">
               <div className="col-sm-4">
                 <div className="bg-secondary rounded p-4">
@@ -517,111 +509,108 @@ function Home(){
     {/* Blog End */}
 {/* Team Start */}
 <div className="container-fluid team pb-5">
-        <div className="container pb-5">
-          <div className="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: '800px' }}>
-            <h4 className="text-green">Our Team</h4>
-            <h1 className="text-darkgreen">Our PineappleAI Company Dedicated Team Members</h1>
+  <div className="container pb-5">
+    <div className="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: '800px' }}>
+      <h4 className="text-green">Our Team</h4>
+      <h1 className="text-darkgreen">Our PineappleAI Company Dedicated Team Members</h1>
+    </div>
+    <OwlCarousel className="team-carousel owl-carousel" {...teamOptions}>
+      {/* Team Member 1 */}
+      <div className="team-item rounded">
+        <div className="team-img">
+          <img src="img/mat.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
+          <div className="team-icon">
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
           </div>
-          <OwlCarousel className="team-carousel owl-carousel" {...teamOptions}>
-            <div className="team-item rounded">
-              <div className="team-img">
-                <img src="img/mat.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
-                <div className="team-icon">
-                  <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-                  <div className="team-icon-share">
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-content bg-light text-center rounded-bottom p-4">
-                <div className="team-content-inner rounded-bottom">
-                  <h4 className="text-black">Mis.K.Mathumitha</h4>
-                  <p className="text-muted mb-0">QA Engineer(Intern)</p>
-                </div>
-              </div>
-            </div>
-            <div className="team-item rounded">
-              <div className="team-img">
-                <img src="img/su.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
-                <div className="team-icon">
-                  <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-                  <div className="team-icon-share">
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-content bg-light text-center rounded-bottom p-4">
-                <div className="team-content-inner rounded-bottom">
-                  <h4 className="text-black">Mr.T.Subothavajan</h4>
-                  <p className="text-muted mb-0">Mobileapp Engineer(Intern)</p>
-                </div>
-              </div>
-            </div>
-            <div className="team-item rounded">
-              <div className="team-img">
-                <img src="img/nivet.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
-                <div className="team-icon">
-                  <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-                  <div className="team-icon-share">
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-content bg-light text-center rounded-bottom p-4">
-                <div className="team-content-inner rounded-bottom">
-                  <h4 className="text-black">Mis.V.Nivethiga</h4>
-                  <p className="text-muted mb-0">Fullstack Engineer(Intern)</p>
-                </div>
-              </div>
-            </div>
-            <div className="team-item rounded">
-              <div className="team-img">
-                <img src="img/thi.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
-                <div className="team-icon">
-                  <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-                  <div className="team-icon-share">
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-content bg-light text-center rounded-bottom p-4">
-                <div className="team-content-inner rounded-bottom">
-                  <h4 className="text-black">Mis.R.Thivja</h4>
-                  <p className="text-muted mb-0">Fullstack Engineer(Intern)</p>
-                </div>
-              </div>
-            </div>
-            <div className="team-item rounded">
-              <div className="team-img">
-                <img src="img/th.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
-                <div className="team-icon">
-                  <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-                  <div className="team-icon-share">
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-                    <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-content bg-light text-center rounded-bottom p-4">
-                <div className="team-content-inner rounded-bottom">
-                  <h4 className="text-black">Mis.B.Tharankitha</h4>
-                  <p className="text-muted mb-0">HR(Intern)</p>
-                </div>
-              </div>
-            </div>
-          </OwlCarousel>
+        </div>
+        <div className="team-content bg-light text-center rounded-bottom p-4">
+          <div className="team-content-inner rounded-bottom">
+            <h4 className="text-black">Mis.K.Mathumitha</h4>
+            <p className="text-muted mb-0">QA Engineer(Intern)</p>
+          </div>
         </div>
       </div>
-      {/* Team End */}
+      {/* Team Member 2 */}
+      <div className="team-item rounded">
+        <div className="team-img">
+          <img src="img/su.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
+          <div className="team-icon">
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
+          </div>
+        </div>
+        <div className="team-content bg-light text-center rounded-bottom p-4">
+          <div className="team-content-inner rounded-bottom">
+            <h4 className="text-black">Mr.T.Subothavajan</h4>
+            <p className="text-muted mb-0">Mobileapp Engineer(Intern)</p>
+          </div>
+        </div>
+      </div>
+      {/* Team Member 3 */}
+      <div className="team-item rounded">
+        <div className="team-img">
+          <img src="img/nivet.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
+          <div className="team-icon">
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
+          </div>
+        </div>
+        <div className="team-content bg-light text-center rounded-bottom p-4">
+          <div className="team-content-inner rounded-bottom">
+            <h4 className="text-black">Mis.V.Nivethiga</h4>
+            <p className="text-muted mb-0">Fullstack Engineer(Intern)</p>
+          </div>
+        </div>
+      </div>
+      {/* Team Member 4 */}
+      <div className="team-item rounded">
+        <div className="team-img">
+          <img src="img/thi.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
+          <div className="team-icon">
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
+          </div>
+        </div>
+        <div className="team-content bg-light text-center rounded-bottom p-4">
+          <div className="team-content-inner rounded-bottom">
+            <h4 className="text-black">Mis.R.Thivja</h4>
+            <p className="text-muted mb-0">Fullstack Engineer(Intern)</p>
+          </div>
+        </div>
+      </div>
+      {/* Team Member 5 */}
+      <div className="team-item rounded">
+        <div className="team-img">
+          <img src="img/th.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
+          <div className="team-icon">
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
+          </div>
+        </div>
+        <div className="team-content bg-light text-center rounded-bottom p-4">
+          <div className="team-content-inner rounded-bottom">
+            <h4 className="text-black">Mis.B.Tharankitha</h4>
+            <p className="text-muted mb-0">HR(Intern)</p>
+          </div>
+        </div>
+      </div>
+    </OwlCarousel>
+  </div>
+</div>
+{/* Team End */}
+
+
     {/* Team Start */}
     {/* <div className="container-fluid team pb-5">
       <div className="container pb-5">
@@ -898,25 +887,23 @@ function Home(){
             </div>
           </div>
           <div className="col-md-6 col-lg-6 col-xl-3">
-            <div className="footer-item d-flex flex-column">
-              <h4 className="text-white mb-4">Explore</h4>
-              <a href="#"><i className="fas fa-angle-right  me-2" /> Home</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> Services</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> About Us</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> Latest Projects</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> testimonial</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> Our Team</a>
-              <a href="#"><i className="fas fa-angle-right me-2" /> Contact Us</a>
-            </div>
-          </div>
-          <div className="col-md-6 col-lg-6 col-xl-3">
-            <div className="footer-item d-flex flex-column">
-              <h4 className="text-white mb-4">Contact Info</h4>
-              <a href><i className="fa fa-map-marker-alt me-2" /> No. 34, Kaladdy amman Road, Jaffna-40000, Sri Lanka</a>
-              <a href><i className="fas fa-envelope me-2" /> thepineappleai.com</a>
-              {/* <a href=""><i class="fas fa-envelope me-2"></i>lakshans.pineappleai@gmail.com</a> */}
-              <a href><i className="fas fa-phone me-2" /> 077-8142648</a>
-              {/* <a href="" class="mb-3"><i class="fas fa-print me-2"></i> +012 345 67890</a> */}
+    <div className="footer-item d-flex flex-column">
+        <h4 className="text-white mb-4">Explore</h4>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Home</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Services</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> About Us</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Latest Projects</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Testimonial</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Our Team</a>
+        <a href="#"><i className="fas fa-angle-right me-2"></i> Contact Us</a>
+    </div>
+</div>
+<div className="col-md-6 col-lg-6 col-xl-3">
+    <div className="footer-item d-flex flex-column">
+        <h4 className="text-white mb-4">Contact</h4>
+        <a href="#"><i className="fa fa-map-marker-alt me-2"></i> No. 34, Kaladdy Amman Road, Jaffna-40000, Sri Lanka</a>
+        <a href="#"><i className="fas fa-envelope me-2"></i> thepineappleai.com</a>
+        <a href="#"><i className="fas fa-phone me-2"></i> 077-8142648</a>
               <div className="d-flex align-items-center">
                 <a className="btn btn-light btn-md-square me-2" href><i className="fab fa-facebook-f" /></a>
                 <a className="btn btn-light btn-md-square me-2" href><i className="fab fa-twitter" /></a>
@@ -950,7 +937,7 @@ function Home(){
       <div className="container">
         <div className="row g-4 align-items-center">
           <div className="col-md-6 text-center text-md-start mb-md-0">
-            <span className="text-body"><a href className="border-bottom text-white"><i className="fas fa-copyright text-light me-2" />PINEAPPLEAI.CLOUD</a>, All right reserved.</span>
+            <span className="text-body"><a href className="border-bottom text-white"><i className="fas fa-copyright text-light me-2" />PINEAPPLEAI.CLOUD </a>, All right reserved.</span>
           </div>
           <div className="col-md-6 text-center text-md-end text-body">
             Designed By <a className="border-bottom text-white" href>PineappleAI</a>
