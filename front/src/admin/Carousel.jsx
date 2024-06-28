@@ -2,66 +2,34 @@
 // import React, { useState, useEffect } from 'react';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import axios from 'axios';
-// import {useParams, useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 // import './Carousel.css'; // Make sure to create this CSS file for additional styling
 
 // function Carousel() {
-// const [description, setDescription] = useState('');
+//   const [description, setDescription] = useState('');
 //   const [file, setFile] = useState(null);
+//   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 //   const navigate = useNavigate();
 //   const [carouselData, setCarouselData] = useState([]);
-
-
+//   const [currentItemId, setCurrentItemId] = useState(null);
 
 //   const handleImageChange = (e) => {
-//     setFile(e.target.files[0]);
+//     const selectedFile = e.target.files[0];
+//     setFile(selectedFile);
+//     setImagePreviewUrl(URL.createObjectURL(selectedFile));
 //   };
 
 //   const handleDrop = (e) => {
 //     e.preventDefault();
 //     const droppedFile = e.dataTransfer.files[0];
 //     setFile(droppedFile);
+//     setImagePreviewUrl(URL.createObjectURL(droppedFile));
 //   };
 
-//   // data view
+//   // Data view
 //   useEffect(() => {
-//     axios.get('http://localhost:3001/api/carousel')
-//         .then(result => setCarouselData(result.data))
-//         .catch(err => console.log(err));
-//   }, []); 
-
-
-// // add data
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     const formData = new FormData();
-//     formData.append('carousel_img_1', file);
-//     formData.append('carousel_des_1', description);
-
-//     axios.post("http://localhost:3001/api/carousel", formData, {
-//       headers: {
-//         'Content-Type': 'multipart/form-data'
-//       }
-//     })
-//     .then(result => {
-//       console.log(result);
-//       alert('Data submitted successfully!');
-      
-//       // Clear form fields after successful submission
-//       setDescription('');
-//       setFile(null);
-
-//       // Fetch the updated carousel data
-//       fetchCarouselData();
-
-//       // Navigate to '/carousel'
-//       navigate('/carousel');
-//     })
-//     .catch(err => {
-//       console.error('Error submitting form:', err);
-//       alert('There was an error submitting the form!');
-//     });
-//   };
+//     fetchCarouselData();
+//   }, []);
 
 //   const fetchCarouselData = () => {
 //     axios.get('http://localhost:3001/api/carousel')
@@ -69,18 +37,74 @@
 //         .catch(err => console.log(err));
 //   };
 
-//   // delete
-  
+//   // Add or update data
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     const formData = new FormData();
+//     formData.append('carousel_img_1', file);
+//     formData.append('carousel_des_1', description);
+
+//     if (currentItemId) {
+//       // Update existing item
+//       axios.put(`http://localhost:3001/api/carousel/${currentItemId}`, formData, {
+//         headers: {
+//           'Content-Type': 'multipart/form-data'
+//         }
+//       })
+//       .then(result => {
+//         console.log(result);
+//         alert('Data updated successfully!');
+//         setDescription('');
+//         setFile(null);
+//         setImagePreviewUrl(null);
+//         setCurrentItemId(null);
+//         fetchCarouselData();
+//         navigate('/carousel');
+//       })
+//       .catch(err => {
+//         console.error('Error updating form:', err);
+//         alert('There was an error updating the form!');
+//       });
+//     } else {
+//       // Add new item
+//       axios.post("http://localhost:3001/api/carousel", formData, {
+//         headers: {
+//           'Content-Type': 'multipart/form-data'
+//         }
+//       })
+//       .then(result => {
+//         console.log(result);
+//         alert('Data submitted successfully!');
+//         setDescription('');
+//         setFile(null);
+//         setImagePreviewUrl(null);
+//         fetchCarouselData();
+//         navigate('/carousel');
+//       })
+//       .catch(err => {
+//         console.error('Error submitting form:', err);
+//         alert('There was an error submitting the form!');
+//       });
+//     }
+//   };
+
+//   // Handle delete
 //   const handleDelete = (id) => {
-//     axios.delete('http://localhost:3001/api/deleteUser/' + id)
+//     axios.delete(`http://localhost:3001/api/deleteUser/${id}`)
 //         .then(res => {
 //             console.log(res);
-//             window.location.reload();
+//             fetchCarouselData();
 //         })
 //         .catch(err => console.log(err));
-// };
+//   };
 
-
+//   // Handle update
+//   const handleUpdate = (item) => {
+//     setDescription(item.carousel_des_1);
+//     setFile(null); // Assume you want to upload a new image
+//     setImagePreviewUrl(`http://localhost:3001/images/${item.carousel_img_1}`);
+//     setCurrentItemId(item._id);
+//   };
 
 //   return (
 //     <div className='container'>
@@ -99,7 +123,6 @@
 //                   type="file"
 //                   onChange={handleImageChange}
 //                   className='form-control'
-//                   required
 //                   style={{ display: 'none' }} // Hide the default file input
 //                   id="fileUpload"
 //                 />
@@ -107,6 +130,11 @@
 //                   {file ? file.name : "Drag & drop an image here or click to select"}
 //                 </label>
 //               </div>
+//               {imagePreviewUrl && (
+//                 <div className="mt-2 text-center">
+//                   <img src={imagePreviewUrl} alt="Preview" width="100" />
+//                 </div>
+//               )}
 //             </div>
 //             <div className='mb-3'>
 //               <label htmlFor="carouselDescription" className='form-label'>Carousel Description</label>
@@ -121,7 +149,7 @@
 //               />
 //             </div>
 //             <div className='d-flex justify-content-center'>
-//               <button type='submit' className='btn btn-primary'>Add</button>
+//               <button type='submit' className='btn btn-primary'>{currentItemId ? 'Update' : 'Add'}</button>
 //             </div>
 //           </form>
 //         </div>
@@ -144,8 +172,8 @@
 //                   <td><img src={`http://localhost:3001/images/${item.carousel_img_1}`} alt="carousel" width="100" /></td>
 //                   <td>{item.carousel_des_1}</td>
 //                   <td>
-//                     <button className='btn btn-success me-2'>Update</button>
-//                     <button className='btn btn-danger' onClick={() => handleDelete(item._id)} >Delete</button>
+//                     <button className='btn btn-success me-2' onClick={() => handleUpdate(item)}>Update</button>
+//                     <button className='btn btn-danger' onClick={() => handleDelete(item._id)}>Delete</button>
 //                   </td>
 //                 </tr>
 //               ))}
@@ -158,10 +186,12 @@
 // }
 
 // export default Carousel;
+
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from 'react-bootstrap'; // Import Modal and Button from react-bootstrap
 import './Carousel.css'; // Make sure to create this CSS file for additional styling
 
 function Carousel() {
@@ -171,6 +201,8 @@ function Carousel() {
   const navigate = useNavigate();
   const [carouselData, setCarouselData] = useState([]);
   const [currentItemId, setCurrentItemId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
 
   const handleImageChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -249,12 +281,19 @@ function Carousel() {
 
   // Handle delete
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:3001/api/deleteUser/${id}`)
-        .then(res => {
-            console.log(res);
-            fetchCarouselData();
-        })
-        .catch(err => console.log(err));
+    setShowModal(true);
+    setDeleteItemId(id);
+  };
+
+  const confirmDelete = () => {
+    axios.delete(`http://localhost:3001/api/deleteUser/${deleteItemId}`)
+      .then(res => {
+        console.log(res);
+        setShowModal(false);
+        setDeleteItemId(null);
+        fetchCarouselData();
+      })
+      .catch(err => console.log(err));
   };
 
   // Handle update
@@ -340,6 +379,22 @@ function Carousel() {
           </table>
         </div>
       </div>
+
+      {/* Modal for delete confirmation */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this data?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={confirmDelete}>
+            Yes
+          </Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            No
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -559,7 +559,7 @@ function Home(){
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
-            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-" /></a>
           </div>
         </div>
         <div className="team-content bg-light text-center rounded-bottom p-4">
@@ -575,7 +575,7 @@ function Home(){
           <img src="img/thi.jpg" className="img-fluid w-100 rounded-top fixed-size-image" alt="Image" />
           <div className="team-icon">
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fas fa-share-alt" /></a>
-            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-facebook-f" /></a>
+            <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-linkedin-in" /></a>
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-3" href="#"><i className="fab fa-twitter" /></a>
             <a className="btn btn-primary btn-sm-square text-white rounded-circle mb-0" href="#"><i className="fab fa-instagram" /></a>
           </div>
